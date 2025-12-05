@@ -20,9 +20,8 @@ Description: Tools for creating concentration curves to visualize inequality
     of a population ranked by some variable of interest. The package 
     provides a ggplot2 geom for easy integration with existing workflows and 
     functions for data preprocessing and concentration index calculation.
-Imports: dplyr,
-    ggplot2, 
-    scales
+Imports: ggplot2 
+
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
