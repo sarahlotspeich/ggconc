@@ -59,59 +59,63 @@ StatConcentration <-
 
                    compute_group = function(data, scales, rank_ascend = TRUE,
                                             round_rank = NULL, na.rm = FALSE) {
-                     # Handle missing values
-                     if (!na.rm && any(!complete.cases(data[, c("x", "y")]))) {
-                       warning("Removed ", sum(!complete.cases(data[, c("x", "y")])),
-                               " rows containing missing values (geom_concentration).",
-                               call. = FALSE)
-                     }
-
-                     data <- data[complete.cases(data[, c("x", "y")]), ]
-
-                     if (nrow(data) == 0) {
-                       return(data.frame(x = numeric(0), y = numeric(0)))
-                     }
-
-                     # Round rank variable if specified
-                     if (!is.null(round_rank)) {
-                       data$round_rank_var <- round(data$x, digits = round_rank)
+                     # simple NA handling
+                     if (na.rm) {
+                       data <- data[complete.cases(data[, c("x", "y")]), , drop = FALSE]
                      } else {
-                       data$round_rank_var <- data$x
+                       if (any(!complete.cases(data[, c("x", "y")]))) {
+                         warning("Removed rows with missing x or y (geom_concentration).", call. = FALSE)
+                       }
+                       data <- data[complete.cases(data[, c("x", "y")]), , drop = FALSE]
                      }
 
-                     # Group by rounded rank variable and aggregate
-                     agg_data <- aggregate(
-                       cbind(num = y, sum_health = y) ~ round_rank_var,
-                       data = data,
-                       FUN = function(z) c(num = length(z), sum_health = sum(z))
-                     )
+                     if (nrow(data) == 0) return(data.frame(x = numeric(0), y = numeric(0)))
 
-                     agg_data$num <- agg_data$sum_health.num
-                     agg_data$sum_health <- agg_data$sum_health.sum_health
-                     agg_data$sum_health.num <- agg_data$sum_health.sum_health <- NULL
-
-                     # If ordering descendingly, negate round_rank_var
-                     if (!rank_ascend) {
-                       agg_data$round_rank_var <- -agg_data$round_rank_var
+                     # optionally round the rank variable
+                     if (!is.null(round_rank)) {
+                       rr <- round(data$x, digits = round_rank)
+                     } else {
+                       rr <- data$x
                      }
 
-                     # Order by round_rank_var
-                     agg_data <- agg_data[order(agg_data$round_rank_var), ]
+                     # make grouping keys (use character keys for split/tapply)
+                     keys <- as.character(rr)
 
+                     # robust aggregation (scalar results)
+                     counts <- tapply(data$y, keys, length)
+                     sums   <- tapply(data$y, keys, sum)
 
-                     # Calculate cumulative proportions
-                     agg_data$cumsum_num <- cumsum(agg_data$num)
-                     agg_data$cumprop_num <- agg_data$cumsum_num / sum(agg_data$num)
-                     agg_data$cumsum_health <- cumsum(agg_data$sum_health)
-                     agg_data$cumprop_health <- agg_data$cumsum_health / sum(agg_data$sum_health)
-
-                     # Add starting point (0, 0)
-                     result <- data.frame(
-                       x = c(0, agg_data$cumprop_num),
-                       y = c(0, agg_data$cumprop_health)
+                     agg <- data.frame(
+                       round_rank_var = names(counts),
+                       num = as.integer(unname(counts)),
+                       sum_health = as.numeric(unname(sums)),
+                       stringsAsFactors = FALSE
                      )
 
-                     return(result)
+                     # try coerce grouping key back to numeric for ordering if possible
+                     rr_num <- suppressWarnings(as.numeric(agg$round_rank_var))
+                     if (!any(is.na(rr_num))) agg$round_rank_var <- rr_num
+
+                     # order / invert if needed
+                     if (is.numeric(agg$round_rank_var)) {
+                       if (!rank_ascend) agg$round_rank_var <- -agg$round_rank_var
+                       agg <- agg[order(agg$round_rank_var), , drop = FALSE]
+                     } else {
+                       agg <- agg[order(agg$round_rank_var), , drop = FALSE]
+                       if (!rank_ascend) agg <- agg[rev(seq_len(nrow(agg))), , drop = FALSE]
+                     }
+
+                     total_num <- sum(agg$num)
+                     total_health <- sum(agg$sum_health)
+                     if (total_num == 0 || total_health == 0) return(data.frame(x = 0, y = 0))
+
+                     cumnum <- cumsum(agg$num) / total_num
+                     cumsum_health <- cumsum(agg$sum_health) / total_health
+
+                     data.frame(
+                       x = c(0, as.numeric(cumnum)),
+                       y = c(0, as.numeric(cumsum_health))
+                     )
                    }
   )
 
