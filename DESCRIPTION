@@ -21,7 +21,6 @@ Description: Tools for creating concentration curves to visualize inequality
     provides a ggplot2 geom for easy integration with existing workflows and 
     functions for data preprocessing and concentration index calculation.
 Imports: ggplot2 
-
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
