@@ -1,22 +1,29 @@
+---
+output: github_document
+---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
 
 # ggconc
 
 <!-- badges: start -->
-
 [![R-CMD-check](https://github.com/sarahlotspeich/ggconc/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/sarahlotspeich/ggconc/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-The goal of ggconc is to make it simple to visualize health and
-socioeconomic inequalities through concentration curves, with seamless
-ggplot2 integration that fits naturally into existing data visualization
-workflows.
+The goal of ggconc is to make it simple to visualize health and socioeconomic inequalities through concentration curves, with seamless ggplot2 integration  that fits naturally into existing data visualization workflows.
 
 ## Installation
 
-You can install the development version of ggconc from
-[GitHub](https://github.com/) with:
+You can install the development version of ggconc from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("pak")
@@ -27,7 +34,7 @@ pak::pak("sarahlotspeich/ggconc")
 
 Below is a simple concentration curve using `geom_concentration()`:
 
-``` r
+```{r example}
 library(ggconc)
 library(ggplot2)
 ggplot(food_dat, aes(x = INCOME, y = X_full)) +
@@ -37,15 +44,11 @@ ggplot(food_dat, aes(x = INCOME, y = X_full)) +
    theme_minimal() +
   labs(x = "Cumulative Proportion of Observations\n(Ranked by Income)",
        y = "Cumulative Proportion of Driving Distance")
-#> Warning: Removed 2 rows containing non-finite outside the scale range
-#> (`stat_concentration()`).
 ```
-
-<img src="man/figures/README-example-1.png" width="100%" />
 
 Here is an example of multiple concentration curves with grouped data:
 
-``` r
+```{r}
 food_dat$income_group = cut(food_dat$INCOME, 
                             breaks = quantile(food_dat$INCOME, probs = c(0, 0.33, 0.67, 1), na.rm = TRUE),
                             labels = c("Low", "Medium", "High"),
@@ -58,8 +61,6 @@ ggplot(food_dat, aes(x = INCOME, y = X_full, color = income_group)) +
   labs(x = "Cumulative Proportion of Observations\n(Ranked by Income)",
        y = "Cumulative Proportion of Driving Distance",
        color = "Income Group")
-#> Warning: Removed 2 rows containing non-finite outside the scale range
-#> (`stat_concentration()`).
+
 ```
 
-<img src="man/figures/README-unnamed-chunk-2-1.png" width="100%" />

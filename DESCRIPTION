@@ -6,15 +6,26 @@ Authors@R: c(
     person(
       "Sarah", "Lotspeich",
       email = "lotspes@wfu.edu",
-      role = c("aut", "cre")
-    )
+      role = c("aut")
+    ),
+    person(
+       "Lucy", "D'Agostino McGowan", 
+       email = "lucydagostino@gmail.com", 
+       role = c("aut", "cre"),
+       comment = c(ORCID = "0000-0002-6983-2759"))
   )
-Description: More about what it does (maybe more than one line).
-    Continuation lines should be indented.
-Imports: dplyr,
-    ggplot2, 
-    scales
-License: What license is it under?
+Description: Tools for creating concentration curves to visualize inequality 
+    and disproportionate distributions. Concentration curves plot the cumulative 
+    proportion of a health outcome or resource against the cumulative proportion 
+    of a population ranked by some variable of interest. The package 
+    provides a ggplot2 geom for easy integration with existing workflows and 
+    functions for data preprocessing and concentration index calculation.
+Imports: 
+    ggplot2
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.2
+Roxygen: list(markdown = TRUE)
+Depends: 
+    R (>= 3.5)
