@@ -52,12 +52,7 @@ geom_concentration <- function(mapping = NULL, data = NULL,
   )
 }
 
-#' Statistical transformation for concentration curves
-#'
-#' @rdname geom_concentration
-#' @format NULL
-#' @usage NULL
-#' @export
+
 StatConcentration <-
   ggplot2::ggproto("StatConcentration", ggplot2::Stat,
                    required_aes = c("x", "y"),
@@ -85,13 +80,15 @@ StatConcentration <-
                      }
 
                      # Group by rounded rank variable and aggregate
-                     agg_data <- data |>
-                       dplyr::group_by(round_rank_var) |>
-                       dplyr::summarize(
-                         num = dplyr::n(),
-                         sum_health = sum(y),
-                         .groups = "drop"
-                       )
+                     agg_data <- aggregate(
+                       cbind(num = y, sum_health = y) ~ round_rank_var,
+                       data = data,
+                       FUN = function(z) c(num = length(z), sum_health = sum(z))
+                     )
+
+                     agg_data$num <- agg_data$sum_health.num
+                     agg_data$sum_health <- agg_data$sum_health.sum_health
+                     agg_data$sum_health.num <- agg_data$sum_health.sum_health <- NULL
 
                      # If ordering descendingly, negate round_rank_var
                      if (!rank_ascend) {
@@ -99,17 +96,14 @@ StatConcentration <-
                      }
 
                      # Order by round_rank_var
-                     agg_data <- agg_data |>
-                       dplyr::arrange(round_rank_var)
+                     agg_data <- agg_data[order(agg_data$round_rank_var), ]
+
 
                      # Calculate cumulative proportions
-                     agg_data <- agg_data |>
-                       dplyr::mutate(
-                         cumsum_num = cumsum(num),
-                         cumprop_num = cumsum_num / sum(num),
-                         cumsum_health = cumsum(sum_health),
-                         cumprop_health = cumsum_health / sum(sum_health)
-                       )
+                     agg_data$cumsum_num <- cumsum(agg_data$num)
+                     agg_data$cumprop_num <- agg_data$cumsum_num / sum(agg_data$num)
+                     agg_data$cumsum_health <- cumsum(agg_data$sum_health)
+                     agg_data$cumprop_health <- agg_data$cumsum_health / sum(agg_data$sum_health)
 
                      # Add starting point (0, 0)
                      result <- data.frame(
@@ -121,10 +115,7 @@ StatConcentration <-
                    }
   )
 
-#' @rdname geom_concentration
-#' @format NULL
-#' @usage NULL
-#' @export
+
 stat_concentration <- function(mapping = NULL, data = NULL,
                                geom = "line",
                                position = "identity",
