@@ -8,11 +8,10 @@ This function plots a concentration curve using \code{ggplot2}}
 make_conc_curve(conc_data)
 }
 \arguments{
-\item{data}{pre-processed dataset of ordered, aggregate data returned by \code{make_conc_data} function}
+\item{conc_data}{pre-processed dataset of ordered, aggregate data returned by \code{make_conc_data} function}
 }
 \value{
-A \code{data.frame} is returned:
-\item{delta}{Estimated average treatment effect on the primary outcome.}
+A \code{ggplot} object of the concentration curve.
 }
 \description{
 Plot a concentration curve
